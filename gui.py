@@ -2,8 +2,8 @@ from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QLabel, QGridLayout, QStackedWidget,\
     QVBoxLayout, QHBoxLayout
 from PySide6.QtGui import QPixmap, QIcon, QFont, QLinearGradient, QColor, QImage, QFontDatabase, QPalette
-import random as rd
-import requests
+
+
 
 
 
@@ -34,7 +34,7 @@ class Window(QMainWindow):
         self.stacked_widgets = QStackedWidget()
         layout.addWidget(self.stacked_widgets)
 
-        main_page = EntryPage()
+        main_page = QuizPage()
         layout.addWidget(main_page)
 
 
@@ -107,8 +107,44 @@ class QuizPage(QWidget):
         super().__init__()
         self.setFixedSize(QSize(800, 600))
 
-        layout = QGridLayout()
+        layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.setLayout(layout)
+
+        app_name_label = QLabel("Quizzard")
+        app_name_label.setContentsMargins(0, 0, 0, 50)
+        app_name_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        app_name_label.setFont(QFont("Lobster", 50))
+        app_name_label.setStyleSheet("color: #5d0fd8;")
+
+        but_1 = CategoryButton('A: test1')
+        but_2 = CategoryButton('B: test2')
+        but_3 = CategoryButton('C: test3')
+        but_4 = CategoryButton('D: test4')
+
+        question = Question('TEST QUESTION ABCD OR SMTH ELSE?')
+
+
+        col1 = QVBoxLayout()
+        col2 = QVBoxLayout()
+
+        col1.addWidget(but_1)
+        col1.addWidget(but_3)
+        col2.addWidget(but_2)
+        col2.addWidget(but_4)
+
+        row = QHBoxLayout()
+        row.setContentsMargins(0, 20, 0, 100)
+        row.setSpacing(25)
+
+        row.addLayout(col1)
+        row.addLayout(col2)
+
+        layout.addWidget(app_name_label)
+        layout.addWidget(question)
+        layout.addLayout(row)
+
+
 
 
 
@@ -130,6 +166,15 @@ class CategoryButton(QPushButton):
         font = QFont('Lobster')
 
         self.setFont(font)
+
+
+class Question(CategoryButton):
+
+    def __init__(self, text):
+        super().__init__(text)
+        self.setFixedSize(QSize(500, 100))
+        self.setEnabled(False)
+
 
 
 

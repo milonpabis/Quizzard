@@ -37,8 +37,10 @@ class Window(QMainWindow):
 
         self.main_page = EntryPage(self)
         self.question_page = QuizPage(self)
+        self.end_page = EndPage(self)
         self.stacked_widgets.addWidget(self.main_page)
         self.stacked_widgets.addWidget(self.question_page)
+        self.stacked_widgets.addWidget(self.end_page)
 
 
 # --------------------------------------------------------------- MAIN PAGE
@@ -137,18 +139,22 @@ class EntryPage(QWidget):
         self.main.stacked_widgets.setCurrentIndex(1)
 
     def next_question(self):
-        f_question = next(self.data)
-        question = f_question[0]
-        self.g_answer = f_question[1]
-        answers = f_question[2] + [self.g_answer]
-        rd.shuffle(answers)
+        if self.main.question_page.q_number <= 10:
+            f_question = next(self.data)
+            question = f_question[0]
+            self.g_answer = f_question[1]
+            answers = f_question[2] + [self.g_answer]
+            rd.shuffle(answers)
 
-        self.main.question_page.question.setText(question)
-        self.main.question_page.but_1.setText(answers[0])
-        self.main.question_page.but_2.setText(answers[1])
-        self.main.question_page.but_3.setText(answers[2])
-        self.main.question_page.but_4.setText(answers[3])
-        self.main.question_page.question_number.setText(f"{self.main.question_page.q_number}/10")
+            self.main.question_page.question.setText(question)
+            self.main.question_page.but_1.setText(answers[0])
+            self.main.question_page.but_2.setText(answers[1])
+            self.main.question_page.but_3.setText(answers[2])
+            self.main.question_page.but_4.setText(answers[3])
+            self.main.question_page.question_number.setText(f"{self.main.question_page.q_number}/10")
+        else:
+            self.main.stacked_widgets.setCurrentIndex(2)
+            self.main.end_page.points_collected.setText(f"Your result: {self.main.question_page.points}/10")
 
 
 # --------------------------------------------------------------- QUIZ PAGE
@@ -183,8 +189,6 @@ class QuizPage(QWidget):
         self.button_group.addButton(self.but_4)
 
         self.button_group.buttonPressed.connect(self.next_question)
-
-
 
         self.question = Question('TEST QUESTION ABCD OR SMTH ELSE?')
 
@@ -225,9 +229,41 @@ class QuizPage(QWidget):
 
 
 
+class EndPage(QWidget):
+
+    def __init__(self, main):
+        super().__init__()
+        self.main = main
+        self.setFixedSize(QSize(800, 600))
+
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        self.points_collected = QLabel("Your result: 0/10")
+        self.points_collected.setStyleSheet("color: #5d0fd8;")
+        self.points_collected.setFont(QFont("Lobster", 20))
+        self.points_collected.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        new_game_button = CategoryButton("New Game")
+        new_game_button.pressed.connect(self.new_game)
+        exit_button = CategoryButton("Exit")
+        exit_button.pressed.connect(self.exit)
+        col = QVBoxLayout()
+        col.addWidget(new_game_button)
+        col.addWidget(exit_button)
+        col.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        layout.addWidget(self.points_collected)
+        layout.addLayout(col)
 
 
+    def new_game(self):
+        self.main.question_page.q_number = 1
+        self.main.question_page.points = 0
+        self.main.stacked_widgets.setCurrentIndex(0)
 
+    def exit(self):
+        self.main.destroy()
 
 
 class CategoryButton(QPushButton):
@@ -256,17 +292,3 @@ class Question(CategoryButton):
         super().__init__(text)
         self.setFixedSize(QSize(500, 100))
         self.setEnabled(False)
-
-
-
-
-
-
-
-
-
-
-
-
-
-

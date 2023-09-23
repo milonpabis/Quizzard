@@ -1,7 +1,7 @@
 import requests
 
 AMOUNT = 10
-URL = f"https://opentdb.com/api.php?amount={AMOUNT}&category="
+URL = f"https://opentdb.com/api.php?amount={AMOUNT}&type=multiple&category="
 CATEGORIES_NUMS = {'Sports': '21', 'Mathematics': '19', 'General': '9', 'Art': '25', 'Video Games': '15',
                                    'Geography': '22'}
 

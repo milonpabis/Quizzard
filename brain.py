@@ -1,5 +1,4 @@
 import requests
-import random as rd
 
 AMOUNT = 10
 URL = f"https://opentdb.com/api.php?amount={AMOUNT}&category="
@@ -11,17 +10,20 @@ class GameBrain:
 
     def __init__(self, category):
         self.category = category
-        self.respond = requests.get(URL + CATEGORIES_NUMS[category])
-        print(self.respond.text)
+        respond = requests.get(URL + CATEGORIES_NUMS[category])
+        self.respond = respond.json()["results"]
+        print(self.respond)
+
 
 
     def return_question(self):
 
-        for _ in range(AMOUNT):
-            question = None
-            good_answer = None
-            wrong_answers = None
-            yield [question, good_answer, wrong_answers]
+        for i in range(AMOUNT):
+            data = self.respond[i]
+            question = data['question'].replace("&#039;", "'").replace("&quot;", "\"")
+            g_answer = data['correct_answer'].replace("&#039;", "'").replace("&quot;", "\"")
+            w_answers = list(map(lambda x: x.replace("&#039;", "'").replace("&quot;", "\""), data['incorrect_answers']))
+            yield [question, g_answer, w_answers]
 
 
 

@@ -12,12 +12,12 @@ from brain import GameBrain
 
 
 if __name__ == "__main__":
-    #app = QApplication()
-    #window = Window()
-    #window.show()
-    #app.exec()
-    brain = GameBrain('Sports')
-
+    app = QApplication()
+    window = Window()
+    window.show()
+    app.exec()
+    # brain = GameBrain('Sports').return_question()
+    # print(next(brain))
 
 
 

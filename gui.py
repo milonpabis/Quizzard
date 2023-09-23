@@ -1,8 +1,9 @@
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QLabel, QGridLayout, QStackedWidget,\
-    QVBoxLayout, QHBoxLayout
+    QVBoxLayout, QHBoxLayout, QButtonGroup
 from PySide6.QtGui import QPixmap, QIcon, QFont, QLinearGradient, QColor, QImage, QFontDatabase, QPalette
-
+from brain import GameBrain
+import random as rd
 
 
 
@@ -34,19 +35,24 @@ class Window(QMainWindow):
         self.stacked_widgets = QStackedWidget()
         layout.addWidget(self.stacked_widgets)
 
-        main_page = QuizPage()
-        layout.addWidget(main_page)
+        self.main_page = EntryPage(self)
+        self.question_page = QuizPage(self)
+        self.stacked_widgets.addWidget(self.main_page)
+        self.stacked_widgets.addWidget(self.question_page)
 
 
 # --------------------------------------------------------------- MAIN PAGE
 class EntryPage(QWidget):
 
-    def __init__(self):
+    def __init__(self, main):
         super().__init__()
 
         QFontDatabase.addApplicationFont('fonts/lobster.ttf')
 
         self.setFixedSize(QSize(800, 600))
+        self.data = None
+        self.g_answer = None
+        self.main = main
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
@@ -72,22 +78,33 @@ class EntryPage(QWidget):
         category_label.setFont(QFont("Lobster", 20))
         category_label.setStyleSheet("color: #5d0fd8;")
 
-        cat_1 = CategoryButton("Sports")
-        cat_2 = CategoryButton("Art")
-        cat_3 = CategoryButton("General")
-        cat_4 = CategoryButton("Mathematics")
-        cat_5 = CategoryButton("Geography")
-        cat_6 = CategoryButton("Video Games")
+        self.cat_1 = CategoryButton("Sports")
+        self.cat_2 = CategoryButton("Art")
+        self.cat_3 = CategoryButton("General")
+        self.cat_4 = CategoryButton("Mathematics")
+        self.cat_5 = CategoryButton("Geography")
+        self.cat_6 = CategoryButton("Video Games")
+
+        self.button_group = QButtonGroup()
+        self.button_group.addButton(self.cat_1)
+        self.button_group.addButton(self.cat_2)
+        self.button_group.addButton(self.cat_3)
+        self.button_group.addButton(self.cat_4)
+        self.button_group.addButton(self.cat_5)
+        self.button_group.addButton(self.cat_6)
+
+        self.button_group.buttonPressed.connect(self.choose_category)
+
 
         col_1 = QVBoxLayout()
         col_2 = QVBoxLayout()
 
-        col_1.addWidget(cat_1)
-        col_1.addWidget(cat_2)
-        col_1.addWidget(cat_5)
-        col_2.addWidget(cat_3)
-        col_2.addWidget(cat_4)
-        col_2.addWidget(cat_6)
+        col_1.addWidget(self.cat_1)
+        col_1.addWidget(self.cat_2)
+        col_1.addWidget(self.cat_5)
+        col_2.addWidget(self.cat_3)
+        col_2.addWidget(self.cat_4)
+        col_2.addWidget(self.cat_6)
 
         row = QHBoxLayout()
         row.setSpacing(50)
@@ -100,12 +117,49 @@ class EntryPage(QWidget):
         layout.addLayout(row)
 
 
+    def choose_category(self, button):
+
+
+        if button == self.cat_1:        # SPORTS
+            self.data = GameBrain("Sports").return_question()
+        elif button == self.cat_2:      # ART
+            self.data = GameBrain("Art").return_question()
+        elif button == self.cat_3:      # GENERAL
+            self.data = GameBrain("General").return_question()
+        elif button == self.cat_4:      # MATHEMATICS
+            self.data = GameBrain("Mathematics").return_question()
+        elif button == self.cat_5:      # GEOGRAPHY
+            self.data = GameBrain("Geography").return_question()
+        elif button == self.cat_6:      # VIDEO GAMES
+            self.data = GameBrain("Video Games").return_question()
+
+        self.next_question()
+        self.main.stacked_widgets.setCurrentIndex(1)
+
+    def next_question(self):
+        f_question = next(self.data)
+        question = f_question[0]
+        self.g_answer = f_question[1]
+        answers = f_question[2] + [self.g_answer]
+        rd.shuffle(answers)
+
+        self.main.question_page.question.setText(question)
+        self.main.question_page.but_1.setText(answers[0])
+        self.main.question_page.but_2.setText(answers[1])
+        self.main.question_page.but_3.setText(answers[2])
+        self.main.question_page.but_4.setText(answers[3])
+        self.main.question_page.question_number.setText(f"{self.main.question_page.q_number}/10")
+
+
 # --------------------------------------------------------------- QUIZ PAGE
 class QuizPage(QWidget):
 
-    def __init__(self):
+    def __init__(self, main):
         super().__init__()
         self.setFixedSize(QSize(800, 600))
+        self.main = main
+        self.points = 0
+        self.q_number = 1
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
@@ -117,21 +171,36 @@ class QuizPage(QWidget):
         app_name_label.setFont(QFont("Lobster", 50))
         app_name_label.setStyleSheet("color: #5d0fd8;")
 
-        but_1 = CategoryButton('A: test1')
-        but_2 = CategoryButton('B: test2')
-        but_3 = CategoryButton('C: test3')
-        but_4 = CategoryButton('D: test4')
+        self.but_1 = CategoryButton('A: test1')
+        self.but_2 = CategoryButton('B: test2')
+        self.but_3 = CategoryButton('C: test3')
+        self.but_4 = CategoryButton('D: test4')
 
-        question = Question('TEST QUESTION ABCD OR SMTH ELSE?')
+        self.button_group = QButtonGroup()
+        self.button_group.addButton(self.but_1)
+        self.button_group.addButton(self.but_2)
+        self.button_group.addButton(self.but_3)
+        self.button_group.addButton(self.but_4)
+
+        self.button_group.buttonPressed.connect(self.next_question)
+
+
+
+        self.question = Question('TEST QUESTION ABCD OR SMTH ELSE?')
+
+        self.question_number = QLabel(f"{self.q_number}/10")
+        self.question_number.setFont(QFont("Lobster", 14))
+        self.question_number.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.question_number.setStyleSheet("color: #5d0fd8;")
 
 
         col1 = QVBoxLayout()
         col2 = QVBoxLayout()
 
-        col1.addWidget(but_1)
-        col1.addWidget(but_3)
-        col2.addWidget(but_2)
-        col2.addWidget(but_4)
+        col1.addWidget(self.but_1)
+        col1.addWidget(self.but_2)
+        col2.addWidget(self.but_3)
+        col2.addWidget(self.but_4)
 
         row = QHBoxLayout()
         row.setContentsMargins(0, 20, 0, 100)
@@ -141,8 +210,21 @@ class QuizPage(QWidget):
         row.addLayout(col2)
 
         layout.addWidget(app_name_label)
-        layout.addWidget(question)
+        layout.addWidget(self.question)
         layout.addLayout(row)
+        layout.addWidget(self.question_number)
+
+
+
+
+    def next_question(self, button):
+        if button.text() == self.main.main_page.g_answer:
+            self.points += 1
+        self.q_number += 1
+        self.main.main_page.next_question()
+
+
+
 
 
 

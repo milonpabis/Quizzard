@@ -3,9 +3,9 @@ from brain import GameBrain
 
 
 #todo:
-# - question pages
-# - app brain
-# - connect brain with gui
+# - improve gui style
+# - change API database
+# - track best result ( sql ) // future
 
 
 

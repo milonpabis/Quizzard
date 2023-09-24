@@ -1,17 +1,25 @@
 import requests
 
 AMOUNT = 10
-URL = f"https://opentdb.com/api.php?amount={AMOUNT}&type=multiple&category="
-CATEGORIES_NUMS = {'Sports': '21', 'Mathematics': '19', 'General': '9', 'Art': '25', 'Video Games': '15',
-                                   'Geography': '22'}
+
+CATEGORIES_NUMS = {'Sports': 'sport_and_leisure', 'Science': 'science', 'General': 'general_knowledge',
+                   'Art': 'arts_and_literature', 'Society': 'society_and_culture', 'Geography': 'geography'}
+
+
+
+URL_TEST = f"https://the-trivia-api.com/v2/questions"
+PARAMS = {
+    "categories": "science"
+}
 
 
 class GameBrain:
 
     def __init__(self, category):
         self.category = category
-        respond = requests.get(URL + CATEGORIES_NUMS[category])
-        self.respond = respond.json()["results"]
+        PARAMS["categories"] = CATEGORIES_NUMS[self.category]
+        respond = requests.get(URL_TEST, params=PARAMS)
+        self.respond = respond.json()
         print(self.respond)
 
 
@@ -20,9 +28,9 @@ class GameBrain:
 
         for i in range(AMOUNT):
             data = self.respond[i]
-            question = data['question'].replace("&#039;", "'").replace("&quot;", "\"")
-            g_answer = data['correct_answer'].replace("&#039;", "'").replace("&quot;", "\"")
-            w_answers = list(map(lambda x: x.replace("&#039;", "'").replace("&quot;", "\""), data['incorrect_answers']))
+            question = data['question']['text']
+            g_answer = data['correctAnswer']
+            w_answers = data['incorrectAnswers']
             yield [question, g_answer, w_answers]
 
 

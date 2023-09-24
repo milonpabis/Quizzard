@@ -1,11 +1,49 @@
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, QSize, QCoreApplication, QRunnable, QThreadPool, Slot
 from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QLabel, QGridLayout, QStackedWidget,\
     QVBoxLayout, QHBoxLayout, QButtonGroup
 from PySide6.QtGui import QPixmap, QIcon, QFont, QLinearGradient, QColor, QImage, QFontDatabase, QPalette
 from brain import GameBrain
 import random as rd
+import time
 
 
+CATEGORIES = ["Sports", "Art", "General", "Science", "Geography", "Society"]
+TEXT_COLOR = "#5d0fd8"
+BG_BUTTON_COLOR = 'beige'
+WRONG_ANSWER_COLOR = 'red'
+GOOD_ANSWER_COLOR = 'green'
+GRADIENT_START_COLOR = "#7b50bf"
+GRADIENT_STOP_COLOR = "#22c1c3"
+BUTTON_SETUP = f""" background-color: {BG_BUTTON_COLOR};
+                    border-style: outset;
+                    border-width: 4px;
+                    border-radius: 50px;
+                    border-color: #5d0fd8;
+                    font: bold 14px;
+                    min-width: 10em;
+                    padding: 6px;
+                    color: {TEXT_COLOR};"""
+BUTTON_SETUP_RIGHT = f""" 
+                    background-color: {GOOD_ANSWER_COLOR};
+                    border-style: outset;
+                    border-width: 4px;
+                    border-radius: 50px;
+                    border-color: #5d0fd8;
+                    font: bold 14px;
+                    min-width: 10em;
+                    padding: 6px;
+                    color: {TEXT_COLOR};"""
+
+BUTTON_SETUP_WRONG = f""" 
+                    background-color: {WRONG_ANSWER_COLOR};
+                    border-style: outset;
+                    border-width: 4px;
+                    border-radius: 50px;
+                    border-color: #5d0fd8;
+                    font: bold 14px;
+                    min-width: 10em;
+                    padding: 6px;
+                    color: {TEXT_COLOR};"""
 
 
 
@@ -17,11 +55,13 @@ class Window(QMainWindow):
         self.setWindowTitle("Quizzard")
         self.main_widget = QWidget()
         self.setCentralWidget(self.main_widget)
+        self.pool = QThreadPool()
+        self.button_setup = BUTTON_SETUP
         #self.setStyleSheet('background-color: white;')
 
         gradient = QLinearGradient(0, 0, 0, self.height())
-        gradient.setColorAt(0, QColor("#7b50bf"))
-        gradient.setColorAt(1, QColor("#22c1c3"))
+        gradient.setColorAt(0, QColor(GRADIENT_START_COLOR))
+        gradient.setColorAt(1, QColor(GRADIENT_STOP_COLOR))
         palette = self.palette()
         palette.setBrush(QPalette.Window, gradient)
         self.setPalette(palette)
@@ -72,20 +112,20 @@ class EntryPage(QWidget):
         app_name_label.setContentsMargins(0, 0, 0, 50)
         app_name_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         app_name_label.setFont(QFont("Lobster", 50))
-        app_name_label.setStyleSheet("color: #5d0fd8;")
+        app_name_label.setStyleSheet(f"color: {TEXT_COLOR};")
 
         category_label = QLabel("Choose category:")
         category_label.setContentsMargins(0, 0, 0, 10)
         category_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         category_label.setFont(QFont("Lobster", 20))
-        category_label.setStyleSheet("color: #5d0fd8;")
+        category_label.setStyleSheet(f"color: {TEXT_COLOR};")
 
-        self.cat_1 = CategoryButton("Sports")
-        self.cat_2 = CategoryButton("Art")
-        self.cat_3 = CategoryButton("General")
-        self.cat_4 = CategoryButton("Mathematics")
-        self.cat_5 = CategoryButton("Geography")
-        self.cat_6 = CategoryButton("Video Games")
+        self.cat_1 = CategoryButton(CATEGORIES[0])
+        self.cat_2 = CategoryButton(CATEGORIES[1])
+        self.cat_3 = CategoryButton(CATEGORIES[2])
+        self.cat_4 = CategoryButton(CATEGORIES[3])
+        self.cat_5 = CategoryButton(CATEGORIES[4])
+        self.cat_6 = CategoryButton(CATEGORIES[5])
 
         self.button_group = QButtonGroup()
         self.button_group.addButton(self.cat_1)
@@ -123,17 +163,17 @@ class EntryPage(QWidget):
 
 
         if button == self.cat_1:        # SPORTS
-            self.data = GameBrain("Sports").return_question()
+            self.data = GameBrain(CATEGORIES[0]).return_question()
         elif button == self.cat_2:      # ART
-            self.data = GameBrain("Art").return_question()
+            self.data = GameBrain(CATEGORIES[1]).return_question()
         elif button == self.cat_3:      # GENERAL
-            self.data = GameBrain("General").return_question()
+            self.data = GameBrain(CATEGORIES[2]).return_question()
         elif button == self.cat_4:      # MATHEMATICS
-            self.data = GameBrain("Mathematics").return_question()
+            self.data = GameBrain(CATEGORIES[3]).return_question()
         elif button == self.cat_5:      # GEOGRAPHY
-            self.data = GameBrain("Geography").return_question()
+            self.data = GameBrain(CATEGORIES[4]).return_question()
         elif button == self.cat_6:      # VIDEO GAMES
-            self.data = GameBrain("Video Games").return_question()
+            self.data = GameBrain(CATEGORIES[5]).return_question()
 
         self.next_question()
         self.main.stacked_widgets.setCurrentIndex(1)
@@ -145,6 +185,7 @@ class EntryPage(QWidget):
             self.g_answer = f_question[1]
             answers = f_question[2] + [self.g_answer]
             rd.shuffle(answers)
+
 
             self.main.question_page.question.setText(question)
             self.main.question_page.but_1.setText(answers[0])
@@ -175,7 +216,7 @@ class QuizPage(QWidget):
         app_name_label.setContentsMargins(0, 0, 0, 50)
         app_name_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         app_name_label.setFont(QFont("Lobster", 50))
-        app_name_label.setStyleSheet("color: #5d0fd8;")
+        app_name_label.setStyleSheet(f"color: {TEXT_COLOR};")
 
         self.but_1 = CategoryButton('A: test1')
         self.but_2 = CategoryButton('B: test2')
@@ -195,7 +236,7 @@ class QuizPage(QWidget):
         self.question_number = QLabel(f"{self.q_number}/10")
         self.question_number.setFont(QFont("Lobster", 14))
         self.question_number.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        self.question_number.setStyleSheet("color: #5d0fd8;")
+        self.question_number.setStyleSheet(f"color: {TEXT_COLOR};")
 
 
         col1 = QVBoxLayout()
@@ -222,10 +263,31 @@ class QuizPage(QWidget):
 
 
     def next_question(self, button):
+        correct = None
         if button.text() == self.main.main_page.g_answer:
             self.points += 1
+        else:
+            button.setStyleSheet(BUTTON_SETUP_WRONG)
+
+        if self.main.question_page.but_1.text() == self.main.main_page.g_answer:
+            self.main.question_page.but_1.setStyleSheet(BUTTON_SETUP_RIGHT)
+            correct = self.main.question_page.but_1
+
+        elif self.main.question_page.but_2.text() == self.main.main_page.g_answer:
+            self.main.question_page.but_2.setStyleSheet(BUTTON_SETUP_RIGHT)
+            correct = self.main.question_page.but_2
+
+        elif self.main.question_page.but_3.text() == self.main.main_page.g_answer:
+            self.main.question_page.but_3.setStyleSheet(BUTTON_SETUP_RIGHT)
+            correct = self.main.question_page.but_3
+
+        elif self.main.question_page.but_4.text() == self.main.main_page.g_answer:
+            self.main.question_page.but_4.setStyleSheet(BUTTON_SETUP_RIGHT)
+            correct = self.main.question_page.but_4
+
         self.q_number += 1
-        self.main.main_page.next_question()
+        self.main.pool.start(QuestionGap(self.main, button, correct))
+
 
 
 
@@ -240,14 +302,14 @@ class EndPage(QWidget):
         self.setLayout(layout)
 
         self.points_collected = QLabel("Your result: 0/10")
-        self.points_collected.setStyleSheet("color: #5d0fd8;")
+        self.points_collected.setStyleSheet(f"color: {TEXT_COLOR};")
         self.points_collected.setFont(QFont("Lobster", 20))
         self.points_collected.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         new_game_button = CategoryButton("New Game")
         new_game_button.pressed.connect(self.new_game)
         exit_button = CategoryButton("Exit")
-        exit_button.pressed.connect(self.exit)
+        exit_button.pressed.connect(lambda: QCoreApplication.quit())
         col = QVBoxLayout()
         col.addWidget(new_game_button)
         col.addWidget(exit_button)
@@ -262,8 +324,6 @@ class EndPage(QWidget):
         self.main.question_page.points = 0
         self.main.stacked_widgets.setCurrentIndex(0)
 
-    def exit(self):
-        self.main.destroy()
 
 
 class CategoryButton(QPushButton):
@@ -272,15 +332,7 @@ class CategoryButton(QPushButton):
         super().__init__()
         self.setText(text)
         self.setFixedSize(QSize(150, 100))
-        self.setStyleSheet("""  background-color: beige;
-                                border-style: outset;
-                                border-width: 4px;
-                                border-radius: 50px;
-                                border-color: #5d0fd8;
-                                font: bold 14px;
-                                min-width: 10em;
-                                padding: 6px;
-                                color: #5d0fd8;""")
+        self.setStyleSheet(BUTTON_SETUP)
         font = QFont('Lobster')
 
         self.setFont(font)
@@ -292,3 +344,20 @@ class Question(CategoryButton):
         super().__init__(text)
         self.setFixedSize(QSize(500, 100))
         self.setEnabled(False)
+
+
+class QuestionGap(QRunnable):
+
+    def __init__(self, main, button, correct):
+        super().__init__()
+        self.main = main
+        self.button = button
+        self.correct = correct
+
+    @Slot()
+    def run(self):
+        time.sleep(2)
+        self.button.setStyleSheet(BUTTON_SETUP)
+        self.correct.setStyleSheet(BUTTON_SETUP)
+        self.main.main_page.next_question()
+

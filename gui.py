@@ -14,7 +14,8 @@ WRONG_ANSWER_COLOR = 'red'
 GOOD_ANSWER_COLOR = 'green'
 GRADIENT_START_COLOR = "#7b50bf"
 GRADIENT_STOP_COLOR = "#22c1c3"
-BUTTON_SETUP = f""" background-color: {BG_BUTTON_COLOR};
+BUTTON_SETUP = """ QPushButton {
+                    background-color: 'beige';
                     border-style: outset;
                     border-width: 4px;
                     border-radius: 50px;
@@ -22,28 +23,14 @@ BUTTON_SETUP = f""" background-color: {BG_BUTTON_COLOR};
                     font: bold 14px;
                     min-width: 10em;
                     padding: 6px;
-                    color: {TEXT_COLOR};"""
-BUTTON_SETUP_RIGHT = f""" 
-                    background-color: {GOOD_ANSWER_COLOR};
-                    border-style: outset;
-                    border-width: 4px;
-                    border-radius: 50px;
-                    border-color: #5d0fd8;
-                    font: bold 14px;
-                    min-width: 10em;
-                    padding: 6px;
-                    color: {TEXT_COLOR};"""
+                    color: #5d0fd8; }
+                    
+                    QPushButton:hover {
+                    background-color: lightblue; }
+                    """
 
-BUTTON_SETUP_WRONG = f""" 
-                    background-color: {WRONG_ANSWER_COLOR};
-                    border-style: outset;
-                    border-width: 4px;
-                    border-radius: 50px;
-                    border-color: #5d0fd8;
-                    font: bold 14px;
-                    min-width: 10em;
-                    padding: 6px;
-                    color: {TEXT_COLOR};"""
+BUTTON_SETUP_RIGHT = BUTTON_SETUP.replace(BG_BUTTON_COLOR, GOOD_ANSWER_COLOR)
+BUTTON_SETUP_WRONG = BUTTON_SETUP.replace(BG_BUTTON_COLOR, WRONG_ANSWER_COLOR)
 
 
 
@@ -136,6 +123,7 @@ class EntryPage(QWidget):
         self.button_group.addButton(self.cat_6)
 
         self.button_group.buttonPressed.connect(self.choose_category)
+
 
 
         col_1 = QVBoxLayout()
@@ -286,6 +274,10 @@ class QuizPage(QWidget):
             correct = self.main.question_page.but_4
 
         self.q_number += 1
+        self.main.question_page.but_1.setDisabled(True)
+        self.main.question_page.but_2.setDisabled(True)
+        self.main.question_page.but_3.setDisabled(True)
+        self.main.question_page.but_4.setDisabled(True)
         self.main.pool.start(QuestionGap(self.main, button, correct))
 
 
@@ -335,14 +327,14 @@ class CategoryButton(QPushButton):
         self.setStyleSheet(BUTTON_SETUP)
         font = QFont('Lobster')
 
-        self.setFont(font)
+        #self.setFont(font)
 
 
 class Question(CategoryButton):
 
     def __init__(self, text):
         super().__init__(text)
-        self.setFixedSize(QSize(500, 100))
+        self.setFixedSize(QSize(1000, 100))
         self.setEnabled(False)
 
 
@@ -360,4 +352,8 @@ class QuestionGap(QRunnable):
         self.button.setStyleSheet(BUTTON_SETUP)
         self.correct.setStyleSheet(BUTTON_SETUP)
         self.main.main_page.next_question()
+        self.main.question_page.but_1.setDisabled(False)
+        self.main.question_page.but_2.setDisabled(False)
+        self.main.question_page.but_3.setDisabled(False)
+        self.main.question_page.but_4.setDisabled(False)
 

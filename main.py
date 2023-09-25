@@ -4,8 +4,9 @@ from brain import GameBrain
 
 #todo:
 # - improve GUI style ( COLORS, QUESTION LABEL, GRADIENT )
-# - disable buttons after clicking x
-# - give request 2seconds for getting the respond before starting GUI question page
+
+
+
 
 
 

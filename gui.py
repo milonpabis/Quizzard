@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, QSize, QCoreApplication, QRunnable, QThreadPool, Slot
+from PySide6.QtCore import Qt, QSize, QCoreApplication, QTimer, QEventLoop
 from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QLabel, QGridLayout, QStackedWidget,\
     QVBoxLayout, QHBoxLayout, QButtonGroup
 from PySide6.QtGui import QPixmap, QIcon, QFont, QLinearGradient, QColor, QImage, QFontDatabase, QPalette
@@ -38,13 +38,10 @@ class Window(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        #self.setFixedSize(QSize(1000, 600))
         self.setWindowTitle("Quizzard")
         self.main_widget = QWidget()
         self.setCentralWidget(self.main_widget)
-        self.pool = QThreadPool()
         self.button_setup = BUTTON_SETUP
-        #self.setStyleSheet('background-color: white;')
 
         gradient = QLinearGradient(0, 0, 0, self.height())
         gradient.setColorAt(0, QColor(GRADIENT_START_COLOR))
@@ -174,7 +171,6 @@ class EntryPage(QWidget):
             answers = f_question[2] + [self.g_answer]
             rd.shuffle(answers)
 
-
             self.main.question_page.question.setText(question)
             self.main.question_page.but_1.setText(answers[0])
             self.main.question_page.but_2.setText(answers[1])
@@ -249,7 +245,6 @@ class QuizPage(QWidget):
 
 
 
-
     def next_question(self, button):
         correct = None
         if button.text() == self.main.main_page.g_answer:
@@ -257,29 +252,41 @@ class QuizPage(QWidget):
         else:
             button.setStyleSheet(BUTTON_SETUP_WRONG)
 
-        if self.main.question_page.but_1.text() == self.main.main_page.g_answer:
-            self.main.question_page.but_1.setStyleSheet(BUTTON_SETUP_RIGHT)
-            correct = self.main.question_page.but_1
+        if self.but_1.text() == self.main.main_page.g_answer:
+            correct = self.but_1
 
-        elif self.main.question_page.but_2.text() == self.main.main_page.g_answer:
-            self.main.question_page.but_2.setStyleSheet(BUTTON_SETUP_RIGHT)
-            correct = self.main.question_page.but_2
+        elif self.but_2.text() == self.main.main_page.g_answer:
+            correct = self.but_2
 
-        elif self.main.question_page.but_3.text() == self.main.main_page.g_answer:
-            self.main.question_page.but_3.setStyleSheet(BUTTON_SETUP_RIGHT)
-            correct = self.main.question_page.but_3
+        elif self.but_3.text() == self.main.main_page.g_answer:
+            correct = self.but_3
 
-        elif self.main.question_page.but_4.text() == self.main.main_page.g_answer:
-            self.main.question_page.but_4.setStyleSheet(BUTTON_SETUP_RIGHT)
-            correct = self.main.question_page.but_4
+        elif self.but_4.text() == self.main.main_page.g_answer:
+            correct = self.but_4
 
         self.q_number += 1
-        self.main.question_page.but_1.setDisabled(True)
-        self.main.question_page.but_2.setDisabled(True)
-        self.main.question_page.but_3.setDisabled(True)
-        self.main.question_page.but_4.setDisabled(True)
-        self.main.pool.start(QuestionGap(self.main, button, correct))
 
+        correct.setStyleSheet(BUTTON_SETUP_RIGHT)
+        self.but_1.setDisabled(True)
+        self.but_2.setDisabled(True)
+        self.but_3.setDisabled(True)
+        self.but_4.setDisabled(True)
+        timer = QTimer()
+        timer.setSingleShot(True)
+        timer.timeout.connect(lambda: self.unfreeze(correct, button))
+        timer.start(2000)
+        eventloop = QEventLoop()
+        eventloop.exec()
+
+
+    def unfreeze(self, correct, wrong):
+        correct.setStyleSheet(BUTTON_SETUP)
+        wrong.setStyleSheet(BUTTON_SETUP)
+        self.main.main_page.next_question()
+        self.but_1.setDisabled(False)
+        self.but_2.setDisabled(False)
+        self.but_3.setDisabled(False)
+        self.but_4.setDisabled(False)
 
 
 
@@ -317,7 +324,6 @@ class EndPage(QWidget):
         self.main.stacked_widgets.setCurrentIndex(0)
 
 
-
 class CategoryButton(QPushButton):
 
     def __init__(self, text):
@@ -336,24 +342,4 @@ class Question(CategoryButton):
         super().__init__(text)
         self.setFixedSize(QSize(1000, 100))
         self.setEnabled(False)
-
-
-class QuestionGap(QRunnable):
-
-    def __init__(self, main, button, correct):
-        super().__init__()
-        self.main = main
-        self.button = button
-        self.correct = correct
-
-    @Slot()
-    def run(self):
-        time.sleep(2)
-        self.button.setStyleSheet(BUTTON_SETUP)
-        self.correct.setStyleSheet(BUTTON_SETUP)
-        self.main.main_page.next_question()
-        self.main.question_page.but_1.setDisabled(False)
-        self.main.question_page.but_2.setDisabled(False)
-        self.main.question_page.but_3.setDisabled(False)
-        self.main.question_page.but_4.setDisabled(False)
 

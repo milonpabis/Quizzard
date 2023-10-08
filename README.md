@@ -3,7 +3,6 @@ Quizz app with UI
 
 ## Info:
 ### App uses trivia API for question database
-### Long questions do not scale ( TODO )
 
 ## Preview:
 

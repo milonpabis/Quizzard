@@ -326,20 +326,48 @@ class EndPage(QWidget):
 
 class CategoryButton(QPushButton):
 
-    def __init__(self, text):
+    def __init__(self, text: str):
         super().__init__()
-        self.setText(text)
+
+        self.label = QLabel(text, self)
+        self.label.setWordWrap(True)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.label.setStyleSheet("color: #5d0fd8;"
+                            "font: bold 14px;")
+
+        layout = QHBoxLayout()
+        layout.addWidget(self.label)
+        self.setLayout(layout)
+
         self.setFixedSize(QSize(150, 100))
         self.setStyleSheet(BUTTON_SETUP)
-        font = QFont('Lobster')
 
-        #self.setFont(font)
+    def setText(self, text):
+        self.label.setText(text)
+
+    def text(self):
+        return self.label.text()
 
 
-class Question(CategoryButton):
+
+
+
+class Question(QLabel):
 
     def __init__(self, text):
         super().__init__(text)
         self.setFixedSize(QSize(1000, 100))
-        self.setEnabled(False)
+        self.setWordWrap(True)
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setStyleSheet("""  background-color: 'beige';
+                                border-style: outset;
+                                border-width: 4px;
+                                border-radius: 50px;
+                                border-color: #5d0fd8;
+                                font: bold 14px;
+                                min-width: 10em;
+                                padding: 6px;
+                                color: #5d0fd8; """)
+        self.setText(text)
+
 
